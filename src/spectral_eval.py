@@ -3,7 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.stats import wasserstein_distance
-from generation_code_fixed import BrainDiffusionModel, BrainGraphDataset, sample_brain_graph
+from src.model import BrainDiffusionModel, sample_brain_graph
+from src.dataset import BrainGraphDataset
 
 def compute_laplacian_eigenvalues(adj_matrix):
     """
@@ -61,7 +62,7 @@ def validate_spectral(num_samples=20):
     incidence_matrix = dataset.incidence_matrix.to(device)
     
     # Global Stats
-    idxs = np.random.choice(len(dataset), 500, replace=False)
+    idxs = np.random.choice(len(dataset), min(500, len(dataset)), replace=False)
     all_data = [dataset[i]['x_0'] for i in idxs]
     global_mean = torch.cat(all_data).mean().to(device)
     global_std = torch.cat(all_data).std().to(device)
@@ -119,4 +120,8 @@ def validate_spectral(num_samples=20):
     print("Saved spectral_validation.png")
 
 if __name__ == "__main__":
-    validate_spectral()
+    import argparse
+    parser = argparse.ArgumentParser(description="Spectral evaluation of BrainDiffusionModel.")
+    parser.add_argument("--samples", type=int, default=20)
+    args = parser.parse_args()
+    validate_spectral(num_samples=args.samples)

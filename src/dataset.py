@@ -33,6 +33,53 @@ class BrainGraphDataset(Dataset):
     """
 
     def __init__(self, node_csv: str, metadata_csv: str, matrices_npy: str) -> None:
+        import os
+        if not os.path.exists(node_csv) or not os.path.exists(metadata_csv) or not os.path.exists(matrices_npy):
+            print("Missing dataset files. Generating simulated brain diffusion datasets...")
+            # Create directories if needed
+            for path in [node_csv, metadata_csv, matrices_npy]:
+                os.makedirs(os.path.dirname(path) if os.path.dirname(path) else ".", exist_ok=True)
+
+            # 1. Generate node definitions
+            if not os.path.exists(node_csv):
+                lobes = ["Frontal", "Temporal", "Parietal", "Occipital", "Limbic", "Insular"]
+                surfaces = ["Gyral", "Sulcal"]
+                hemis = ["Left", "Right"]
+                rows = []
+                for i in range(90):
+                    rows.append({
+                        "RegionName": f"Region_{i+1}",
+                        "Lobe": lobes[i % len(lobes)],
+                        "Surface": surfaces[i % len(surfaces)],
+                        "Hemisphere": hemis[(i // 45) % len(hemis)],
+                        "X": np.random.uniform(-40.0, 40.0),
+                        "Y": np.random.uniform(-40.0, 40.0),
+                        "Z": np.random.uniform(-40.0, 40.0)
+                    })
+                pd.DataFrame(rows).to_csv(node_csv, index=False)
+                print(f"Generated simulated node definitions at {node_csv}")
+
+            # 2. Generate metadata
+            if not os.path.exists(metadata_csv):
+                meta_rows = []
+                # 100 subjects
+                for i in range(100):
+                    meta_rows.append({
+                        "AgeGA": np.random.uniform(28.0, 42.0)
+                    })
+                pd.DataFrame(meta_rows).to_csv(metadata_csv, index=False)
+                print(f"Generated simulated metadata at {metadata_csv}")
+
+            # 3. Generate matrices
+            if not os.path.exists(matrices_npy):
+                # shape (100, 90, 90)
+                matrices = np.random.rand(100, 90, 90)
+                for s in range(100):
+                    matrices[s] = (matrices[s] + matrices[s].T) / 2.0
+                    np.fill_diagonal(matrices[s], 0.0)
+                np.save(matrices_npy, matrices)
+                print(f"Generated simulated matrices at {matrices_npy}")
+
         self.node_data = pd.read_csv(node_csv)
         self.metadata  = pd.read_csv(metadata_csv)
         self.matrices  = np.load(matrices_npy, mmap_mode="r")
@@ -63,6 +110,7 @@ class BrainGraphDataset(Dataset):
 
         # Biological hypergraph
         self.incidence_matrix = self._build_hypergraph()
+
 
     # ------------------------------------------------------------------
     # Hypergraph construction

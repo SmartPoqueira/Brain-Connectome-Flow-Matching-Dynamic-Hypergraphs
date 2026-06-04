@@ -1,7 +1,8 @@
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-from generation_code_fixed import BrainDiffusionModel, BrainGraphDataset, sample_brain_graph, vector_to_adjacency_matrix
+from src.model import BrainDiffusionModel, sample_brain_graph
+from src.dataset import BrainGraphDataset, vector_to_adjacency_matrix
 
 def run_trajectory_demo():
     # 1. Setup

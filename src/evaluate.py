@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.stats import pearsonr
 import os
-from generation_code_fixed import BrainDiffusionModel, BrainGraphDataset, sample_brain_graph, vector_to_adjacency_matrix
+from src.model import BrainDiffusionModel, sample_brain_graph
+from src.dataset import BrainGraphDataset, vector_to_adjacency_matrix
 
 def validate_and_report(num_samples=50):
     """
@@ -178,4 +179,8 @@ def validate_and_report(num_samples=50):
     print("Saved plot: validation_report_dist.png")
 
 if __name__ == "__main__":
-    validate_and_report(num_samples=20) # 20 samples for quick demo, user can increase
+    import argparse
+    parser = argparse.ArgumentParser(description="Evaluate BrainDiffusionModel.")
+    parser.add_argument("--samples", type=int, default=20)
+    args = parser.parse_args()
+    validate_and_report(num_samples=args.samples)

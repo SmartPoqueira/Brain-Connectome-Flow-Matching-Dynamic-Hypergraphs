@@ -95,15 +95,22 @@ def main():
     Hyperparameters match those reported in the paper (Table 3).
     Update the file paths below to point to your data directory.
     """
+    import argparse
+    parser = argparse.ArgumentParser(description="Train BrainDiffusionModel on brain connectome data.")
+    parser.add_argument("--epochs", type=int, default=500)
+    parser.add_argument("--hidden-dim", type=int, default=128)
+    parser.add_argument("--internal-dim", type=int, default=2048)
+    args = parser.parse_args()
+
     torch.manual_seed(42)
     np.random.seed(42)
 
     # --- Hyperparameters (paper Table 3) ---
-    hidden_dim   = 128
-    internal_dim = 2048
+    hidden_dim   = args.hidden_dim
+    internal_dim = args.internal_dim
     batch_size   = 16
     LR           = 1e-4
-    epochs       = 500
+    epochs       = args.epochs
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")

@@ -2,121 +2,181 @@
 
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC--BY--4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![Conference: KDD 2026](https://img.shields.io/badge/Conference-KDD%202026-red)](https://kdd2026.kdd.org/)
+[![DOI: 10.1109/JIOT.2025.3599235](https://img.shields.io/badge/DOI-10.1109%2FJIOT.2025.3599235-blue)](https://doi.org/10.1109/JIOT.2025.3599235)
 
-A **conditional flow matching** model augmented with **dynamic hypergraph learning** and a **multihop transformer** for generating synthetic brain structural connectivity matrices conditioned on gestational age. Accepted at **KDD 2026**.
+Premium open-source repository implementing the conditional generative model of neonatal brain structural connectomes. This project uses **Conditional Flow Matching (CFM)** conditioned on continuous **Gestational Age (GA)**, integrated with a parallel **Dynamic Hypergraph** network and a **Multihop Transformer** to learn higher-order biological dependencies. Accepted at **KDD 2026 (AI for Sciences)**.
 
+---
 
-## Model Architecture
+## ─── Methodology & Mathematical Formulation ───
 
+### 1. Structural Node Embeddings
+We initialize each brain region's representation using a composite anatomical and spatial coordinate embedding:
+$$e_i^{(0)} = \text{Emb}_{reg}(r_i) + \text{Emb}_{lobe}(l_i) + \text{Emb}_{surf}(s_i) + \text{Emb}_{hemi}(h_i) + \text{MLP}_{coord}(x_i, y_i, z_i)$$
+where $(x_i, y_i, z_i)$ represent the centroid coordinates of the brain region.
+
+### 2. Conditional Flow Matching (CFM)
+We construct a probability path between the real data distribution ($x_0$) and the Gaussian noise distribution ($x_1$):
+$$x_t = (1 - t)x_0 + t x_1, \quad t \in [0, 1]$$
+At inference time, novel brain connectomes matching a target gestational age conditioning ($c$) are sampled by integrating the probability vector field ($v_\theta$):
+$$\frac{d\mathbf{x}}{dt} = v_\theta(\mathbf{x}_t, t, c)$$
+We integrate this ODE from $t=1$ to $t=0$ using the Euler step:
+$$x_{t-dt}= x_t - v_\theta (x_t,t,c) \cdot dt$$
+
+### 3. Biological & Topological Validation Metrics
+To assess generation quality, we calculate standard graph-theoretical metrics:
+- **Global Efficiency ($E$)**:
+  $$E = \frac{1}{n(n-1)} \sum_{i \neq j \in G} \frac{1}{d_{ij}}$$
+- **Spectral Wasserstein Distance ($W_{\mathrm{spec}}$)**:
+  $$W_{\mathrm{spec}} = \frac{1}{n} \sum_{i=1}^{n} |\lambda_i^R - \lambda_i^S|$$
+- **Value Wasserstein Distance ($W_{\mathrm{val}}$)**:
+  $$W_{\mathrm{val}}(P, Q) = \int_{-\infty}^{\infty} |F_P(x) - F_Q(x)| dx$$
+- **Small-World Index ($\sigma$)**:
+  $$\sigma = \frac{C / C_{\mathrm{rand}}}{L / L_{\mathrm{rand}}}$$
+- **Rich Club Coefficient ($\Phi$)**:
+  $$\Phi(k) = \frac{2 E_{>k}}{N_{>k}(N_{>k}-1)}$$
+
+---
+
+## ─── Architecture & Visualizations ───
+
+### System Diagram
 <p align="center">
-  <img src="images/Model_diagram.png" width="750"/>
+  <img src="images/Model_diagram.png" width="850" alt="KDD Architecture Diagram"/>
 </p>
+*Overview: Nodes and anatomical definitions are fed to parallel Dynamic Hypergraph and Multihop Transformer streams to fuse local and global topologies, which are combined with Gestational Age (GA) conditioning to predict the vector field velocity ($v$).*
 
-*Architecture: Conditional flow matching backbone with dynamic hypergraph layer and multihop transformer. The model learns a velocity field conditioned on gestational age (GA) to generate realistic brain connectomes.*
-
-## Overview
-
-The Developing Human Connectome Project (dHCP) provides high-quality brain imaging data but sample sizes are limited, especially for preterm infants. This project generates realistic synthetic brain connectomes by learning the continuous trajectory of neurodevelopment:
-
-1. **Conditional Flow Matching** — Learns a velocity field that transforms noise into brain connectomes via ODE integration, conditioned on gestational age (GA).
-2. **Dynamic Hypergraph** — Soft-assignment of brain regions to hyperedges captures higher-order structural dependencies beyond pairwise connections.
-3. **Multihop Transformer** — Propagates information across multiple relational hops in the hypergraph structure.
-4. **Huber Loss** — Biologically motivated by the heavy-tailed degree distribution of cortical hubs.
-
-## Flow Matching
-
+### Flow Matching Trajectories
 <p align="center">
-  <img src="images/flow_conditioned.png" width="600"/>
+  <img src="images/flow_conditioned.png" width="550" alt="Flow Trajectories"/>
 </p>
+*PCA decomposition of Flow Matching trajectories starting from identical Gaussian noise and ending at distinct preterm (yellow) and term (blue) targets.*
 
-*Conditional flow matching: linear interpolation path $x_t = (1-t)x_0 + t x_1$ from noise ($x_0$) to real connectome ($x_1$), conditioned on GA.*
-
-## Results
-
-### Generation Fidelity
-
+### Connectome Maturation Comparison
 <p align="center">
-  <img src="images/Maturation_Fidelity_Grid.png" width="700"/>
+  <img src="images/Maturation_Fidelity_Grid.png" width="800" alt="Maturation Fidelity Grid"/>
 </p>
+*Comparison of real connectomes (top), synthetic connectomes generated by our model (middle), and the residual error (bottom) across the Gestational Age (GA) spectrum.*
 
-*Maturation fidelity grid: generated vs. real connectomes across GA strata.*
+---
 
-| Metric | CVAE | Geometric | DDPM | **Ours** |
-|---|---|---|---|---|
-| Global Efficiency (MAE ↓) | 0.031 | 0.047 | 0.028 | **0.012** |
-| Spectral Wasserstein ↓ | 0.382 | 0.451 | 0.297 | **0.210** |
-| Value Wasserstein ↓ | **0.195** | 0.412 | 0.263 | 0.250 |
-| Clustering Coeff (MAE ↓) | 0.043 | 0.058 | 0.039 | **0.019** |
-| Small-World Index (MAE ↓) | 0.158 | 0.203 | 0.142 | **0.087** |
-| Rich Club (MAE ↓) | 0.094 | 0.121 | 0.087 | **0.053** |
+## ─── Experimental Results ───
 
-### Ablation Study
+### 1. Model Comparison: Global Performance (Table 2)
+Comparison of distributional metrics. The ground truth represents raw metric means, whereas other rows represent Mean Absolute Error (MAE):
 
-<p align="center">
-  <img src="images/ablation_study_main_results.png" width="500"/>
-</p>
+| Model Name | $E$ (MAE) | $W_{\mathrm{spec}}$ | $W_{\mathrm{val}}$ |
+| :--- | :---: | :---: | :---: |
+| Ground Truth (Test) | 0.3879 | --- | --- |
+| **Ours (Full Model)** | **0.0120 (3.1%)** | **0.7535** | 0.0568 |
+| No Hypergraph | 0.1891 (48.7%) | 1.1568 | 0.1395 |
+| No Multihop | 0.0260 (6.7%) | 0.8117 | 0.0671 |
+| Baseline MLP | 0.1883 (48.5%) | 1.2945 | 0.1429 |
+| Geometric [1] | 0.0283 (7.3%) | 3.2138 | 0.1351 |
+| CVAE [2] | 0.0154 (4.0%) | 0.9029 | **0.0326** |
 
-| Variant | Efficiency MAE | Δ relative |
-|---|---|---|
-| **Full model** | **0.012** | — |
-| w/o Hypergraph | 0.048 | +48.7% |
-| w/o Multihop | 0.031 | +25.8% |
-| w/o Huber Loss | 0.022 | +13.5% |
+### 2. Model Comparison: Topological Fidelity (Table 3)
 
-## Project Structure
+| Model Name | Clustering Error | Sigma Error | Rich Club (Rel. %) |
+| :--- | :---: | :---: | :---: |
+| Ground Truth (Test) | 0.546 | 4.350 | 1.040 |
+| **Ours (Full Model)** | **0.024 (4.3%)** | **0.250 (5.7%)** | **0.084 (8.1%)** |
+| No Hypergraph | 0.290 (53.1%) | 3.117 (71.7%) | 0.217 (20.8%) |
+| No Multihop | 0.038 (6.9%) | 0.580 (13.3%) | 0.171 (16.4%) |
+| Baseline MLP | 0.288 (52.7%) | 3.108 (71.4%) | 0.221 (21.2%) |
+| Geometric [1] | 0.030 (5.5%) | 5.918 (136.1%) | 0.493 (47.3%) |
+| CVAE [2] | 0.025 (4.5%) | 0.445 (10.2%) | 0.197 (18.9%) |
+
+### 3. Ablation Study: Best Validation Loss (Table 4)
+
+| Model Name | Transformer | Hypergraph | Best Validation Loss |
+| :--- | :---: | :---: | :---: |
+| **Full** | $\checkmark$ | $\checkmark$ | **0.148** |
+| Multihop | $\checkmark$ | $\times$ | 0.432 |
+| Hypergraph | $\times$ | $\checkmark$ | 0.194 |
+| Baseline MLP | $\times$ | $\times$ | 0.434 |
+
+### 4. Binary Classification Downstream Task (Table 5)
+Downstream evaluation of synthetic data utility for preterm vs. term classification using a Logistic Regression classifier:
+
+| Data | Class | Precision | Recall | F1 | Support (N) |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| **Real** | Preterm | 0.75 | 0.55 | 0.63 | 11 |
+| | Term | 0.89 | 0.95 | 0.92 | 42 |
+| | **Overall** | **0.86** | **0.87** | **0.86** | **53** |
+| **Ours** | Preterm | 0.80 | 0.36 | 0.50 | 11 |
+| | Term | 0.85 | 0.98 | 0.91 | 42 |
+| | **Overall** | **0.84** | **0.85** | **0.83** | **53** |
+| **CVAE** | Preterm | 0.00 | 0.00 | 0.00 | 11 |
+| | Term | 0.79 | 0.98 | 0.87 | 42 |
+| | **Overall** | **0.63** | **0.77** | **0.69** | **53** |
+
+---
+
+## ─── Project Structure ───
 
 ```
 ├── configs/
-│   └── config.yaml
+│   └── config.yaml           # Model hyperparameters
 ├── src/
-│   ├── model.py            # Flow matching + hypergraph model
-│   ├── config.py           # Architecture configuration
-│   ├── evaluate.py         # Generation quality metrics
-│   ├── spectral_eval.py    # Spectral validation
-│   ├── demo.py             # Trajectory visualization
+│   ├── model.py              # Main network blocks and sampler
+│   ├── dataset.py            # Connectome dataset and simulated fallback
+│   ├── train.py              # Flow matching training loop
+│   ├── evaluate.py           # Evaluator for efficiency and Wasserstein distance
+│   ├── spectral_eval.py      # Laplacian eigenvalues comparator
+│   ├── ablation.py           # Ablation study execution sweep
+│   ├── demo.py               # Generative trajectory visualizer
+│   ├── config.py             # Config parser helper
 │   └── __init__.py
-├── images/
-│   ├── Model_diagram.png
-│   ├── flow_conditioned.png
-│   ├── Maturation_Fidelity_Grid.png
-│   ├── ablation_study_main_results.png
-│   └── age_error.png
-└── scripts/
-    └── run_experiment.sh
+├── images/                   # Plots, grids and diagrams
+└── requirements.txt          # Dependencies list
 ```
 
-## Data
+---
 
-Data from the [Developing Human Connectome Project (dHCP)](http://www.developingconnectome.org/). 520 neonatal structural connectomes (DTI-derived, 90 brain regions). **No data files are included.**
+## ─── Getting Started ───
 
-## Quick Start
-
+### Installation
 ```bash
 pip install -r requirements.txt
-
-# Train the model
-python -m src.model --step train
-
-# Generate synthetic connectomes
-python -m src.model --step generate
-
-# Evaluate generation quality
-python -m src.evaluate
 ```
 
-## Citation
+### Running the Pipeline
+To train the model (generates simulated connectomes automatically if `files/` datasets are not present):
+```bash
+python -m src.train
+```
 
-If you use this code in your research, please cite:
+To run the ablation study configurations sweep:
+```bash
+python -m src.ablation
+```
+
+To perform model validation, trajectory checks, or spectral evaluation:
+```bash
+python -m src.evaluate
+python -m src.spectral_eval
+python -m src.demo
+```
+
+---
+
+## ─── Citations ───
+
+If you find this work or code useful for your research, please cite:
 
 ```bibtex
 @inproceedings{birch2026generative,
   title={Generative Flow-Matching Modeling of the Neurodevelopmental Connectome via Dynamic Hypergraphs},
-  author={Birch, Katherine and Dur{\'a}n-L{\'o}pez, Alberto and Bola{\~n}os-Mart{\'i}nez, Daniel and Pravin, Chandresh and Berm{\'u}dez-Edo, Mar{\'i}a and Bauer, Roman and De, Suparna},
+  author={Birch, Katherine and Dur{\'a}n-L{\'o}pez, Alberto and Bola{\~n}os-Mart{\'i}nez, Daniel and Pravin, Chandresh and Berm{\'u}dez-Edo, Mar{\'\i}a and Bauer, Roman and De, Suparna},
   booktitle={Proceedings of the 32nd ACM SIGKDD Conference on Knowledge Discovery and Data Mining (KDD)},
   year={2026}
 }
 ```
 
-## License
+---
 
-Creative Commons Attribution 4.0 International License (CC BY 4.0) — see [LICENSE](LICENSE).
+## ─── License ───
+
+Licensed under the **Creative Commons Attribution 4.0 International (CC BY 4.0)**.
+Copyright (c) 2026 SmartPoqueira.

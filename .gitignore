@@ -16,3 +16,8 @@ results/
 
 # Paper (preserves it locally, but it should not be uploaded)
 paper/
+tests/
+files/
+ablation_results/
+*.png
+*.pth

@@ -131,9 +131,13 @@ class ResidualBlock(nn.Module):
 
 
 class BrainDiffusionModel(nn.Module):
-    def __init__(self, num_nodes, num_regions, num_lobes, num_surfaces, num_hemispheres, hidden_dim=128, internal_dim=2048):
+    def __init__(self, num_nodes, num_regions, num_lobes, num_surfaces, num_hemispheres, hidden_dim=128, internal_dim=2048,
+                 use_hypergraph=True, use_transformer=True, use_ga=True):
         super().__init__()
         self.data_dim = int(num_nodes * (num_nodes - 1) // 2)
+        self.use_hypergraph = use_hypergraph
+        self.use_transformer = use_transformer
+        self.use_ga = use_ga
 
         self.time_mlp = nn.Sequential(
             SinusoidalPosEmb(hidden_dim),
@@ -169,15 +173,28 @@ class BrainDiffusionModel(nn.Module):
 
     def forward(self, x_t, t, age_ga_norm, node_feats, edge_indices, incidence_matrix, force_null=False):
         t_emb = self.time_mlp(t)
-        ga_emb = self.cond_encoder(age_ga_norm, force_null=force_null)
+        
+        # If use_ga is False, we bypass continuous GA conditioning
+        if not self.use_ga:
+            ga_emb = self.cond_encoder(age_ga_norm, force_null=True)
+        else:
+            ga_emb = self.cond_encoder(age_ga_norm, force_null=force_null)
 
         regions, lobes, surfaces, hemis, coords = node_feats
 
         raw_node_embs = self.node_structure_emb(regions, lobes, surfaces, hemis, coords)
 
-        refined_node_embs = self.multihop_node_emb(raw_node_embs)
+        # If use_transformer is False, skip multihop transformer
+        if self.use_transformer:
+            refined_node_embs = self.multihop_node_emb(raw_node_embs)
+        else:
+            refined_node_embs = raw_node_embs
 
-        hyper_node_embs = self.hypergraph(refined_node_embs, incidence_matrix)
+        # If use_hypergraph is False, skip dynamic hypergraph layer
+        if self.use_hypergraph:
+            hyper_node_embs = self.hypergraph(refined_node_embs, incidence_matrix)
+        else:
+            hyper_node_embs = refined_node_embs
 
         u_inds = edge_indices[:, 0]
         v_inds = edge_indices[:, 1]
@@ -200,6 +217,7 @@ class BrainDiffusionModel(nn.Module):
         output = self.output_proj(x)
 
         return output + structure_bias
+
 
 
 
