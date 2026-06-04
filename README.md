@@ -106,6 +106,8 @@ python -m src.evaluate
 
 ## Citation
 
+If you use this code in your research, please cite:
+
 ```bibtex
 @inproceedings{birch2026generative,
   title={Generative Flow-Matching Modeling of the Neurodevelopmental Connectome via Dynamic Hypergraphs},
