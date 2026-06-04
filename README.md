@@ -12,16 +12,24 @@ Premium open-source repository implementing the conditional generative model of 
 
 ### 1. Structural Node Embeddings
 We initialize each brain region's representation using a composite anatomical and spatial coordinate embedding:
-$$e_i^{(0)} = \text{Emb}_{reg}(r_i) + \text{Emb}_{lobe}(l_i) + \text{Emb}_{surf}(s_i) + \text{Emb}_{hemi}(h_i) + \text{MLP}_{coord}(x_i, y_i, z_i)$$
+
+$$e_i^{(0)} = \text{Emb}_{\text{reg}}(r_i) + \text{Emb}_{\text{lobe}}(l_i) + \text{Emb}_{\text{surf}}(s_i) + \text{Emb}_{\text{hemi}}(h_i) + \text{MLP}_{\text{coord}}(x_i, y_i, z_i)$$
+
 where $(x_i, y_i, z_i)$ represent the centroid coordinates of the brain region.
 
 ### 2. Conditional Flow Matching (CFM)
 We construct a probability path between the real data distribution ($x_0$) and the Gaussian noise distribution ($x_1$):
+
 $$x_t = (1 - t)x_0 + t x_1, \quad t \in [0, 1]$$
+
 At inference time, novel brain connectomes matching a target gestational age conditioning ($c$) are sampled by integrating the probability vector field ($v_\theta$):
+
 $$\frac{d\mathbf{x}}{dt} = v_\theta(\mathbf{x}_t, t, c)$$
+
 We integrate this ODE from $t=1$ to $t=0$ using the Euler step:
+
 $$x_{t-dt}= x_t - v_\theta (x_t,t,c) \cdot dt$$
+
 
 ### 3. Biological & Topological Validation Metrics
 To assess generation quality, we calculate standard graph-theoretical metrics:
