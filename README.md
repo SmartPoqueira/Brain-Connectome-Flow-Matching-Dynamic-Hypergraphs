@@ -178,7 +178,8 @@ If you find this work or code useful for your research, please cite:
   title={Generative Flow-Matching Modeling of the Neurodevelopmental Connectome via Dynamic Hypergraphs},
   author={Birch, Katherine and Dur{\'a}n-L{\'o}pez, Alberto and Bola{\~n}os-Mart{\'i}nez, Daniel and Pravin, Chandresh and Berm{\'u}dez-Edo, Mar{\'\i}a and Bauer, Roman and De, Suparna},
   booktitle={Proceedings of the 32nd ACM SIGKDD Conference on Knowledge Discovery and Data Mining (KDD)},
-  year={2026}
+  year={2026},
+  note={in press}
 }
 ```
 
