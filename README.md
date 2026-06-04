@@ -2,7 +2,7 @@
 
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC--BY--4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![Conference: KDD 2026](https://img.shields.io/badge/Conference-KDD%202026-red)](https://kdd2026.kdd.org/)
-[![DOI: 10.1109/JIOT.2025.3599235](https://img.shields.io/badge/DOI-10.1109%2FJIOT.2025.3599235-blue)](https://doi.org/10.1109/JIOT.2025.3599235)
+[![Status: In Press](https://img.shields.io/badge/Status-In%20Press-orange)](https://kdd2026.kdd.org/)
 
 Premium open-source repository implementing the conditional generative model of neonatal brain structural connectomes. This project uses **Conditional Flow Matching (CFM)** conditioned on continuous **Gestational Age (GA)**, integrated with a parallel **Dynamic Hypergraph** network and a **Multihop Transformer** to learn higher-order biological dependencies. Accepted at **KDD 2026 (AI for Sciences)**.
 
