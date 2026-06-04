@@ -9,7 +9,7 @@ A **conditional flow matching** model augmented with **dynamic hypergraph learni
 ## Model Architecture
 
 <p align="center">
-  <img src="paper/figures/Model_diagram.png" width="750"/>
+  <img src="images/Model_diagram.png" width="750"/>
 </p>
 
 *Architecture: Conditional flow matching backbone with dynamic hypergraph layer and multihop transformer. The model learns a velocity field conditioned on gestational age (GA) to generate realistic brain connectomes.*
@@ -26,7 +26,7 @@ The Developing Human Connectome Project (dHCP) provides high-quality brain imagi
 ## Flow Matching
 
 <p align="center">
-  <img src="paper/figures/flow_conditioned.png" width="600"/>
+  <img src="images/flow_conditioned.png" width="600"/>
 </p>
 
 *Conditional flow matching: linear interpolation path $x_t = (1-t)x_0 + t x_1$ from noise ($x_0$) to real connectome ($x_1$), conditioned on GA.*
@@ -36,7 +36,7 @@ The Developing Human Connectome Project (dHCP) provides high-quality brain imagi
 ### Generation Fidelity
 
 <p align="center">
-  <img src="paper/figures/Maturation_Fidelity_Grid.png" width="700"/>
+  <img src="images/Maturation_Fidelity_Grid.png" width="700"/>
 </p>
 
 *Maturation fidelity grid: generated vs. real connectomes across GA strata.*
@@ -53,7 +53,7 @@ The Developing Human Connectome Project (dHCP) provides high-quality brain imagi
 ### Ablation Study
 
 <p align="center">
-  <img src="paper/figures/ablation_study_main_results.png" width="500"/>
+  <img src="images/ablation_study_main_results.png" width="500"/>
 </p>
 
 | Variant | Efficiency MAE | Δ relative |
@@ -75,10 +75,12 @@ The Developing Human Connectome Project (dHCP) provides high-quality brain imagi
 │   ├── spectral_eval.py    # Spectral validation
 │   ├── demo.py             # Trajectory visualization
 │   └── __init__.py
-├── paper/
-│   ├── main.tex
-│   ├── references.bib
-│   └── figures/
+├── images/
+│   ├── Model_diagram.png
+│   ├── flow_conditioned.png
+│   ├── Maturation_Fidelity_Grid.png
+│   ├── ablation_study_main_results.png
+│   └── age_error.png
 └── scripts/
     └── run_experiment.sh
 ```
@@ -115,4 +117,4 @@ python -m src.evaluate
 
 ## License
 
-MIT License — see [LICENSE](LICENSE).
+Creative Commons Attribution 4.0 International License (CC BY 4.0) — see [LICENSE](LICENSE).
