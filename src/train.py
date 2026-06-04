@@ -188,7 +188,9 @@ def main():
                 static_node_features, edge_indices, incidence_matrix,
                 force_null=force_null,
             )
-            loss = F.l1_loss(pred_v, target_v)
+            # Huber loss as specified in the paper (Section 3.3):
+            # chosen over L1/L2 due to heavy-tailed connectome distributions.
+            loss = F.huber_loss(pred_v, target_v, delta=1.0)
 
             optimizer.zero_grad()
             loss.backward()
