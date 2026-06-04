@@ -1,6 +1,6 @@
 # Generative Flow-Matching Modeling of the Neurodevelopmental Connectome via Dynamic Hypergraphs
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: CC BY 4.0](https://img.shields.io/badge/License-CC--BY--4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![Conference: KDD 2026](https://img.shields.io/badge/Conference-KDD%202026-red)](https://kdd2026.kdd.org/)
 
 A **conditional flow matching** model augmented with **dynamic hypergraph learning** and a **multihop transformer** for generating synthetic brain structural connectivity matrices conditioned on gestational age. Accepted at **KDD 2026**.
