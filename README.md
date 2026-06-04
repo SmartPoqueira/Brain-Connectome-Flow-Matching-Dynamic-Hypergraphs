@@ -5,6 +5,7 @@
 
 A **conditional flow matching** model augmented with **dynamic hypergraph learning** and a **multihop transformer** for generating synthetic brain structural connectivity matrices conditioned on gestational age. Accepted at **KDD 2026**.
 
+
 ## Model Architecture
 
 <p align="center">

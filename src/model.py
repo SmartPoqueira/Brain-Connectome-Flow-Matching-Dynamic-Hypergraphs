@@ -302,7 +302,9 @@ def vector_to_adjacency_matrix(vector, num_nodes):
 def sample_brain_graph(model, target_age, device, node_feats, edge_indices, incidence_matrix, global_mean, global_std,
                        guidance_scale=3.0, num_steps=100):
     """
-    todo: check if this is DDIM sampling or DDPM sampling
+    Euler integration of the flow-matching ODE: x_{t+dt} = x_t + v(x_t, t) * dt
+    where v is the learned velocity field. Uses classifier-free guidance:
+        v_guided = v_uncond + scale * (v_cond - v_uncond)
     """
     model.eval()
     ga_tensor = torch.tensor([[target_age / 100.0]], dtype=torch.float32).to(device)
